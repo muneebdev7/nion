@@ -15,6 +15,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nion
 include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { FASTP                  } from '../modules/nf-core/fastp/main'
 include { METAPHLAN3_METAPHLAN3  } from '../modules/nf-core/metaphlan3/metaphlan3/main'
+include { METAPHLAN3_MERGEMETAPHLANTABLES } from '../modules/nf-core/metaphlan3/mergemetaphlantables/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,11 +51,31 @@ workflow NION {
         false
     )
 
-    // Prepare trimmed reads as input in bwa_mem module
-    //ch_clean_reads = FASTP.out.reads.map { meta, reads ->
-    //   [meta, reads]
-    // }
     ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.json.map { _meta, json -> json })
+
+
+    //
+    // MODULE: Run MetaPhlAn3 for taxonomic classification and abundance estimation
+    //
+    if (params.metaphlan_db) {
+        def ch_metaphlan_db
+        ch_metaphlan_db = channel.fromPath(params.metaphlan_db, checkIfExists: true).first()
+
+        METAPHLAN3_METAPHLAN3(
+            FASTP.out.reads.map { meta, reads -> [meta, reads] },
+            ch_metaphlan_db
+        )
+
+        ch_versions = ch_versions.mix(METAPHLAN3_METAPHLAN3.out.versions)
+        ch_multiqc_files = ch_multiqc_files.mix(METAPHLAN3_METAPHLAN3.out.profile.map { _meta, profile -> profile })
+    
+        METAPHLAN3_MERGEMETAPHLANTABLES (
+            METAPHLAN3_METAPHLAN3.out.profile.collect{ _meta, profile -> profile }.map{ profiles -> [[id:'merged'], profiles]}
+        )
+        ch_versions = ch_versions.mix(METAPHLAN3_MERGEMETAPHLANTABLES.out.versions)
+    } else {
+        log.warn("MetaPhlAn is disabled: provide --metaphlan_db.")
+    }
 
     //
     // Collate and save software versions
