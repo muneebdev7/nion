@@ -238,6 +238,65 @@
                     "description": "Display hidden parameters in the help message (only works when --help or --help_full are provided)."
                 }
             }
+        },
+        "fastp_options": {
+            "title": "fastp_options",
+            "type": "object",
+            "description": "Extended arguments for preprocessing",
+            "default": "",
+            "properties": {
+                "adapter_fasta": {
+                    "type": "string",
+                    "fa_icon": "fas fa-ruler",
+                    "description": "Specify a FASTA file to trim adapter sequences in the read files."
+                },
+                "discard_trimmed_pass": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-trash-alt",
+                    "description": "read1/read2 output file name"
+                },
+                "save_trimmed_fail": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-save",
+                    "description": "Specify the file to store reads that cannot pass the filters"
+                },
+                "save_merged": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-save",
+                    "description": "In the merging mode, specify the file name to store merged output"
+                },
+                "fastp_phred_quality": {
+                    "type": "integer",
+                    "description": "The PHRED quality value that a base is qualified. Default 20 means PHRED quality >=Q20 is qualified",
+                    "default": 20,
+                    "fa_icon": "fas fa-greater-than-equal"
+                },
+                "fastp_reads_minlen_required": {
+                    "type": "integer",
+                    "description": "Reads shorter than length required (specified value) will be discarded",
+                    "default": 100,
+                    "fa_icon": "fas fa-ruler"
+                }
+            },
+            "fa_icon": "fas fa-broom"
+        },
+        "metaphlan_options": {
+            "title": "MetaPhlAn3 options",
+            "type": "object",
+            "description": "Parameters for taxonomic profiling with MetaPhlAn3.",
+            "properties": {
+                "metaphlan_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Path to a pre-downloaded MetaPhlAn database directory."
+                },
+                "metaphlan_index": {
+                    "type": "string",
+                    "default": "mpa_v31_CHOCOPhlAn_201901",
+                    "description": "MetaPhlAn database index name passed to --index."
+                }
+            },
+            "fa_icon": "fas fa-microscope"
         }
     },
     "allOf": [
@@ -252,6 +311,12 @@
         },
         {
             "$ref": "#/$defs/generic_options"
+        },
+        {
+            "$ref": "#/$defs/fastp_options"
+        },
+        {
+            "$ref": "#/$defs/metaphlan_options"
         }
     ]
 }
