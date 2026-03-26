@@ -3,12 +3,18 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nion_pipeline'
+
+//
+// MODULE: Installed directly from nf-core/modules
+//
+include { FASTQC                 } from '../modules/nf-core/fastqc/main'
+include { FASTP                  } from '../modules/nf-core/fastp/main'
+include { METAPHLAN3_METAPHLAN3  } from '../modules/nf-core/metaphlan3/metaphlan3/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,24 +25,41 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nion
 workflow NION {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    ch_raw_short_reads // channel: samplesheet read in from --input
     main:
 
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
+    
     //
     // MODULE: Run FastQC
     //
     FASTQC (
-        ch_samplesheet
+        ch_raw_short_reads
     )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    ch_versions = ch_versions.mix(FASTQC.out.versions)
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map { _meta, zip -> zip })
+
+    //
+    // MODULE: Run Fastp for trimming and filtering
+    //
+    FASTP (
+        ch_raw_short_reads.map { meta, reads -> [meta, reads, []] },
+        false,
+        params.save_trimmed_fail,
+        false
+    )
+
+    // Prepare trimmed reads as input in bwa_mem module
+    //ch_clean_reads = FASTP.out.reads.map { meta, reads ->
+    //   [meta, reads]
+    // }
+    ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.json.map { _meta, json -> json })
 
     //
     // Collate and save software versions
     //
-    def topic_versions = Channel.topic("versions")
+    def topic_versions = channel.topic("versions")
         .distinct()
         .branch { entry ->
             versions_file: entry instanceof Path
