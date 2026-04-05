@@ -16,6 +16,7 @@ include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { FASTP                  } from '../modules/nf-core/fastp/main'
 include { METAPHLAN3_METAPHLAN3  } from '../modules/nf-core/metaphlan3/metaphlan3/main'
 include { METAPHLAN3_MERGEMETAPHLANTABLES } from '../modules/nf-core/metaphlan3/mergemetaphlantables/main'
+include { HUMANN                 } from '../modules/local/humann/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,6 +76,26 @@ workflow NION {
         ch_versions = ch_versions.mix(METAPHLAN3_MERGEMETAPHLANTABLES.out.versions)
     } else {
         log.warn("MetaPhlAn is disabled: provide --metaphlan_db.")
+    }
+
+    //
+    // MODULE: Run Humann for functional annotation
+    //
+    if (params.humann_nucleotide_db && params.humann_protein_db) {
+        def ch_humann_nucleotide_db = channel.fromPath(params.humann_nucleotide_db, checkIfExists: true).first()
+        def ch_humann_protein_db = channel.fromPath(params.humann_protein_db, checkIfExists: true).first()
+        def ch_humann_input = FASTP.out.reads
+            .join(METAPHLAN3_METAPHLAN3.out.profile)
+            .map { meta, reads, profile -> [meta, reads, profile] }
+        
+        HUMANN(
+            ch_humann_input,
+            ch_humann_nucleotide_db,
+            ch_humann_protein_db
+        )
+        ch_versions = ch_versions.mix(HUMANN.out.versions)
+    } else {
+        log.warn("HUMAnN is disabled: provide --humann_nucleotide_db and --humann_protein_db.")
     }
 
     //
