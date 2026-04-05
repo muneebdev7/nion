@@ -274,7 +274,7 @@
                 "fastp_reads_minlen_required": {
                     "type": "integer",
                     "description": "Reads shorter than length required (specified value) will be discarded",
-                    "default": 100,
+                    "default": 50,
                     "fa_icon": "fas fa-ruler"
                 }
             },
@@ -288,7 +288,8 @@
                 "metaphlan_db": {
                     "type": "string",
                     "format": "directory-path",
-                    "description": "Path to a pre-downloaded MetaPhlAn database directory."
+                    "description": "Path to a pre-downloaded MetaPhlAn database directory.",
+                    "default": "/media/hdd/muneeb/nion/metaphlan_db"
                 },
                 "metaphlan_index": {
                     "type": "string",
@@ -297,6 +298,24 @@
                 }
             },
             "fa_icon": "fas fa-microscope"
+        },
+        "humann": {
+            "title": "Humann",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "humann_nucleotide_db": {
+                    "type": "string",
+                    "default": "/media/hdd/muneeb/nion/chocophlan_db",
+                    "description": "Path to a pre-downloaded ChocoPhlAn database directory."
+                },
+                "humann_protein_db": {
+                    "type": "string",
+                    "default": "/media/hdd/muneeb/nion/uniref90_db",
+                    "description": "Path to a pre-downloaded UniRef90 database directory."
+                }
+            }
         }
     },
     "allOf": [
@@ -317,6 +336,9 @@
         },
         {
             "$ref": "#/$defs/metaphlan_options"
+        },
+        {
+            "$ref": "#/$defs/humann"
         }
     ]
 }
