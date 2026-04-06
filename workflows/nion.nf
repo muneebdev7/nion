@@ -14,9 +14,12 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nion
 //
 include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { FASTP                  } from '../modules/nf-core/fastp/main'
-include { METAPHLAN3_METAPHLAN3  } from '../modules/nf-core/metaphlan3/metaphlan3/main'
-include { METAPHLAN3_MERGEMETAPHLANTABLES } from '../modules/nf-core/metaphlan3/mergemetaphlantables/main'
-include { HUMANN                 } from '../modules/local/humann/main'
+
+//
+// SUBWORKFLOWS
+//
+include { TAXONOMIC_CLASSIFICATION  } from '../subworkflows/local/taxonomic_classification'
+include { FUNCTIONAL_ANNOTATION     } from '../subworkflows/local/functional_annotation'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,8 +33,8 @@ workflow NION {
     ch_raw_short_reads // channel: samplesheet read in from --input
     main:
 
-    ch_versions = channel.empty()
-    ch_multiqc_files = channel.empty()
+    def ch_versions = channel.empty()
+    def ch_multiqc_files = channel.empty()
     
     //
     // MODULE: Run FastQC
@@ -39,7 +42,7 @@ workflow NION {
     FASTQC (
         ch_raw_short_reads
     )
-    ch_versions = ch_versions.mix(FASTQC.out.versions)
+    ch_versions = ch_versions.concat(FASTQC.out.versions)
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map { _meta, zip -> zip })
 
     //
@@ -51,51 +54,77 @@ workflow NION {
         params.save_trimmed_fail,
         false
     )
-
     ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.json.map { _meta, json -> json })
 
 
-    //
-    // MODULE: Run MetaPhlAn3 for taxonomic classification and abundance estimation
-    //
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        STEP 3: TAXONOMIC_CLASSIFICATION - Taxonomic profiling using MetaPhlAn3
+        OPTIONAL: Only runs if --metaphlan_db is provided
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
     if (params.metaphlan_db) {
-        def ch_metaphlan_db
-        ch_metaphlan_db = channel.fromPath(params.metaphlan_db, checkIfExists: true).first()
+        def ch_metaphlan_db = channel.fromPath(
+            params.metaphlan_db,
+            checkIfExists: true
+        ).first()
 
-        METAPHLAN3_METAPHLAN3(
-            FASTP.out.reads.map { meta, reads -> [meta, reads] },
+        TAXONOMIC_CLASSIFICATION(
+            FASTP.out.reads,
             ch_metaphlan_db
         )
 
-        ch_versions = ch_versions.mix(METAPHLAN3_METAPHLAN3.out.versions)
-        ch_multiqc_files = ch_multiqc_files.mix(METAPHLAN3_METAPHLAN3.out.profile.map { _meta, profile -> profile })
-    
-        METAPHLAN3_MERGEMETAPHLANTABLES (
-            METAPHLAN3_METAPHLAN3.out.profile.collect{ _meta, profile -> profile }.map{ profiles -> [[id:'merged'], profiles]}
-        )
-        ch_versions = ch_versions.mix(METAPHLAN3_MERGEMETAPHLANTABLES.out.versions)
+        ch_versions = ch_versions.concat(TAXONOMIC_CLASSIFICATION.out.versions)
+        ch_multiqc_files = ch_multiqc_files.mix(TAXONOMIC_CLASSIFICATION.out.profile.map { _meta, profile -> profile })
     } else {
         log.warn("MetaPhlAn is disabled: provide --metaphlan_db.")
     }
 
-    //
-    // MODULE: Run Humann for functional annotation
-    //
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        STEP 4: FUNCTIONAL_ANNOTATION - Functional profiling using HUMAnN
+        OPTIONAL: Only runs if both --humann_nucleotide_db and --humann_protein_db provided
+        REQUIRED: --metaphlan_db must be enabled (MetaPhlAn output is needed as input)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
     if (params.humann_nucleotide_db && params.humann_protein_db) {
-        def ch_humann_nucleotide_db = channel.fromPath(params.humann_nucleotide_db, checkIfExists: true).first()
-        def ch_humann_protein_db = channel.fromPath(params.humann_protein_db, checkIfExists: true).first()
-        def ch_humann_input = FASTP.out.reads
-            .join(METAPHLAN3_METAPHLAN3.out.profile)
-            .map { meta, reads, profile -> [meta, reads, profile] }
-        
-        HUMANN(
-            ch_humann_input,
+
+        // Validate that MetaPhlAn is enabled (required for HUMAnN)
+        if (!params.metaphlan_db) {
+            log.error(
+                "ERROR: --metaphlan_db is required when running HUMAnN.\n" +
+                "       HUMAnN requires MetaPhlAn taxonomic output as input.\n" +
+                "       Please provide --metaphlan_db or disable HUMAnN (omit --humann_nucleotide_db and --humann_protein_db)."
+            )
+            System.exit(1)
+        }
+
+        def ch_humann_nucleotide_db = channel.fromPath(
+            params.humann_nucleotide_db,
+            checkIfExists: true
+        ).first()
+        def ch_humann_protein_db = channel.fromPath(
+            params.humann_protein_db,
+            checkIfExists: true
+        ).first()
+
+        FUNCTIONAL_ANNOTATION(
+            FASTP.out.reads,
+            TAXONOMIC_CLASSIFICATION.out.profile,
             ch_humann_nucleotide_db,
             ch_humann_protein_db
         )
-        ch_versions = ch_versions.mix(HUMANN.out.versions)
+
+        ch_versions = ch_versions.concat(FUNCTIONAL_ANNOTATION.out.versions)
     } else {
-        log.warn("HUMAnN is disabled: provide --humann_nucleotide_db and --humann_protein_db.")
+        if (!params.humann_nucleotide_db || !params.humann_protein_db) {
+            log.info(
+                "HUMAnN is disabled. To enable, provide both:\n" +
+                "  --humann_nucleotide_db <path>\n" +
+                "  --humann_protein_db <path>\n" +
+                "  (and ensure --metaphlan_db is also provided)"
+            )
+        }
     }
 
     //
