@@ -34,9 +34,7 @@ workflow FUNCTIONAL_ANNOTATION {
     // Initialize ordered version tracking
     def ch_versions = channel.empty()
 
-    //
     // Prepare HUMAnN input by joining trimmed reads with MetaPhlAn profiles
-    //
     def ch_humann_input = ch_trimmed_reads
         .join(ch_metaphlan_profile)
         .map { meta, reads, profile -> [meta, reads, profile] }
@@ -55,7 +53,7 @@ workflow FUNCTIONAL_ANNOTATION {
     pathabundance   = HUMANN.out.pathabundance      // channel: [meta, pathabundance]
     pathcoverage    = HUMANN.out.pathcoverage       // channel: [meta, pathcoverage]
     genefamilies    = HUMANN.out.genefamilies       // channel: [meta, genefamilies] (if available)
-    versions        = ch_versions                    // channel: versions
+    versions        = ch_versions                   // channel: versions
 
 }
 
