@@ -3,17 +3,17 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { MULTIQC                } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap       } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nion_pipeline'
+include { MULTIQC                   } from '../modules/nf-core/multiqc/main'
+include { paramsSummaryMap          } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML    } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_nion_pipeline'
 
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
-include { FASTP                  } from '../modules/nf-core/fastp/main'
+include { FASTQC                    } from '../modules/nf-core/fastqc/main'
+include { FASTP                     } from '../modules/nf-core/fastp/main'
 
 //
 // SUBWORKFLOWS
@@ -56,10 +56,9 @@ workflow NION {
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.json.map { _meta, json -> json })
 
-
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        STEP 3: TAXONOMIC_CLASSIFICATION - Taxonomic profiling using MetaPhlAn3
+        Subworkflow 1: TAXONOMIC CLASSIFICATION - Taxonomic profiling using MetaPhlAn3
         OPTIONAL: Only runs if --metaphlan_db is provided
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
@@ -82,7 +81,7 @@ workflow NION {
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        STEP 4: FUNCTIONAL_ANNOTATION - Functional profiling using HUMAnN
+        Subworkflow 2: FUNCTIONAL ANNOTATION - Functional profiling using HUMAnN
         OPTIONAL: Only runs if both --humann_nucleotide_db and --humann_protein_db provided
         REQUIRED: --metaphlan_db must be enabled (MetaPhlAn output is needed as input)
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
