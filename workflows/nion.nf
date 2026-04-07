@@ -20,6 +20,7 @@ include { FASTP                     } from '../modules/nf-core/fastp/main'
 //
 include { TAXONOMIC_CLASSIFICATION  } from '../subworkflows/local/taxonomic_classification'
 include { FUNCTIONAL_ANNOTATION     } from '../subworkflows/local/functional_annotation'
+include { ASSEMBLY                  } from '../subworkflows/local/assembly'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,6 +126,17 @@ workflow NION {
             )
         }
     }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 3: ASSEMBLY - Metagenome assembly using MEGAHIT
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+        ASSEMBLY(
+            FASTP.out.reads
+        )
+        ch_versions = ch_versions.concat(ASSEMBLY.out.versions)
 
     //
     // Collate and save software versions
