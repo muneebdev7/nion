@@ -10,6 +10,11 @@
                         "git_sha": "96c57dfd98a0641886a67bd449fe33ee2ec0e374",
                         "installed_by": ["modules"]
                     },
+                    "coverm/contig": {
+                        "branch": "master",
+                        "git_sha": "38c52b07d406618f6ba4bb21e80172e0230c5623",
+                        "installed_by": ["modules"]
+                    },
                     "fastp": {
                         "branch": "master",
                         "git_sha": "a331ecfd1aa48b2b2298aab23bb4516c800e410b",
