@@ -316,6 +316,27 @@
                     "description": "Path to a pre-downloaded UniRef90 database directory."
                 }
             }
+        },
+        "megahit_options": {
+            "title": "MEGAHIT options",
+            "type": "object",
+            "description": "MEGAHIT options for optimized and efficient assembly process",
+            "default": "",
+            "properties": {
+                "megahit_kmer_list": {
+                    "type": "string",
+                    "default": "31,59,87,115,143",
+                    "fa_icon": "fas fa-clipboard-list",
+                    "description": "Optimized list of k-mers. All must be odd, in the range 15-255"
+                },
+                "megahit_min_contig_len": {
+                    "type": "integer",
+                    "default": 1500,
+                    "fa_icon": "fas fa-ruler",
+                    "description": "Minimum length of contigs to output"
+                }
+            },
+            "fa_icon": "fas fa-align-justify"
         }
     },
     "allOf": [
@@ -339,6 +360,9 @@
         },
         {
             "$ref": "#/$defs/humann"
+        },
+        {
+            "$ref": "#/$defs/megahit_options"
         }
     ]
 }
