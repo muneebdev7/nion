@@ -21,6 +21,7 @@ include { FASTP                     } from '../modules/nf-core/fastp/main'
 include { TAXONOMIC_CLASSIFICATION  } from '../subworkflows/local/taxonomic_classification'
 include { FUNCTIONAL_ANNOTATION     } from '../subworkflows/local/functional_annotation'
 include { ASSEMBLY                  } from '../subworkflows/local/assembly'
+include { BGC_IDENTIFICATION        } from '../subworkflows/local/bgc_identification'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -137,6 +138,17 @@ workflow NION {
             FASTP.out.reads
         )
         ch_versions = ch_versions.concat(ASSEMBLY.out.versions)
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 4: BGC IDENTIFICATION - antiSMASH on assembled contigs
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+        BGC_IDENTIFICATION(
+            ASSEMBLY.out.contigs
+        )
+        ch_versions = ch_versions.concat(BGC_IDENTIFICATION.out.versions)
 
     //
     // Collate and save software versions
