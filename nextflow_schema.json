@@ -337,6 +337,33 @@
                 }
             },
             "fa_icon": "fas fa-align-justify"
+        },
+        "antismash_options": {
+            "title": "antiSMASH options",
+            "type": "object",
+            "description": "Parameters for BGCs identification with antiSMASH",
+            "default": "",
+            "properties": {
+                "gff": {
+                    "type": "string",
+                    "description": "Specify GFF3 file to extract features from."
+                },
+                "antismash_databases": {
+                    "type": "string",
+                    "default": "/media/hdd/muneeb/nion/antismash_db",
+                    "description": "Root directory of the antiSMASH databases"
+                },
+                "antismash_taxon": {
+                    "type": "string",
+                    "default": "bacteria",
+                    "description": "Taxonomic classification of input sequence. {bacteria,fungi}"
+                },
+                "antismash_genefinding_tool": {
+                    "type": "string",
+                    "default": "prodigal",
+                    "description": "Specify algorithm used for gene finding: Prodigal, Prodigal Metagenomic/Anonymous mode, or none. The 'none' option will not run genefinding."
+                }
+            }
         }
     },
     "allOf": [
@@ -359,10 +386,13 @@
             "$ref": "#/$defs/metaphlan_options"
         },
         {
-            "$ref": "#/$defs/humann"
+            "$ref": "#/$defs/humann_options"
         },
         {
             "$ref": "#/$defs/megahit_options"
+        },
+        {
+            "$ref": "#/$defs/antismash_options"
         }
     ]
 }
