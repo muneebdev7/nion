@@ -53,7 +53,8 @@
                     "type": "string",
                     "description": "Name of iGenomes reference.",
                     "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details.",
+                    "hidden": true
                 },
                 "fasta": {
                     "type": "string",
@@ -63,7 +64,8 @@
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "description": "Path to FASTA genome file.",
                     "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
+                    "fa_icon": "far fa-file-code",
+                    "hidden": true
                 },
                 "igenomes_ignore": {
                     "type": "boolean",
@@ -240,7 +242,7 @@
             }
         },
         "fastp_options": {
-            "title": "fastp_options",
+            "title": "fastp options",
             "type": "object",
             "description": "Extended arguments for preprocessing",
             "default": "",
@@ -283,7 +285,7 @@
         "metaphlan_options": {
             "title": "MetaPhlAn3 options",
             "type": "object",
-            "description": "Parameters for taxonomic profiling with MetaPhlAn3.",
+            "description": "Parameters for taxonomic profiling with MetaPhlAn3",
             "properties": {
                 "metaphlan_db": {
                     "type": "string",
@@ -299,10 +301,10 @@
             },
             "fa_icon": "fas fa-microscope"
         },
-        "humann": {
-            "title": "Humann",
+        "humann_options": {
+            "title": "HUMAnN options",
             "type": "object",
-            "description": "",
+            "description": "Parameters for functional annotation with HUMAnN",
             "default": "",
             "properties": {
                 "humann_nucleotide_db": {
