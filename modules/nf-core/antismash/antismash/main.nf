@@ -8,7 +8,7 @@ process ANTISMASH_ANTISMASH {
     input:
     tuple val(meta), path(sequence_input)
     path databases
-    path gff
+    val gff
 
     output:
     tuple val(meta), path("${prefix}/{css,images,js}")                    , emit: html_accessory_files
@@ -47,7 +47,6 @@ process ANTISMASH_ANTISMASH {
         -c ${task.cpus} \\
         --output-dir ${prefix} \\
         --output-basename ${prefix} \\
-        --genefinding-tool none \\
         --logfile ${prefix}/${prefix}.log \\
         --databases ${databases} \\
         ${sequence_input}
