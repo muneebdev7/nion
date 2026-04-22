@@ -48,6 +48,11 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/metabat2/jgisummarizebamcontigdepths/metabat2-jgisummarizebamcontigdepths.diff"
                     },
+                    "metabat2/metabat2": {
+                        "branch": "master",
+                        "git_sha": "cfac0558db800cf39ebeb5513c7c889b0369cebe",
+                        "installed_by": ["modules"]
+                    },
                     "metaphlan3/mergemetaphlantables": {
                         "branch": "master",
                         "git_sha": "fe0ec4b67b1abd71ff9b5ece41fd5a4d8abadad5",
