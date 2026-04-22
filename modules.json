@@ -10,6 +10,16 @@
                         "git_sha": "96c57dfd98a0641886a67bd449fe33ee2ec0e374",
                         "installed_by": ["modules"]
                     },
+                    "bwa/index": {
+                        "branch": "master",
+                        "git_sha": "baa9ee31e48f115832c8eb91a980bf35c9ffc9b9",
+                        "installed_by": ["modules"]
+                    },
+                    "bwa/mem": {
+                        "branch": "master",
+                        "git_sha": "707241c72951f24fd89982c4c80c5983a4c437ef",
+                        "installed_by": ["modules"]
+                    },
                     "coverm/contig": {
                         "branch": "master",
                         "git_sha": "38c52b07d406618f6ba4bb21e80172e0230c5623",
@@ -43,6 +53,11 @@
                     "multiqc": {
                         "branch": "master",
                         "git_sha": "af27af1be706e6a2bb8fe454175b0cdf77f47b49",
+                        "installed_by": ["modules"]
+                    },
+                    "samtools/index": {
+                        "branch": "master",
+                        "git_sha": "156feda0cb6589cd29c04902004fa3b53bc00205",
                         "installed_by": ["modules"]
                     }
                 }
