@@ -8,11 +8,15 @@ include { ANTISMASH_ANTISMASH } from '../../modules/nf-core/antismash/antismash/
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    SUBWORKFLOW: BGC IDENTIFICATION 
+    SUBWORKFLOW: BGC_IDENTIFICATION 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     This subworkflow performs biosynthetic gene cluster (BGC) identification
     using antiSMASH on assembled contigs.
+
+    DEPENDENCIES:
+        - REQUIRES trimmed reads from fastp
+        - REQUIRES MetaPhlAn3 output (taxonomic profile)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */

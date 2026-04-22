@@ -7,16 +7,22 @@ include { MEGAHIT } from '../../modules/nf-core/megahit/main'
 
 
 
-    /*
-    ================================================================================
-                                    Assembly
-    ================================================================================
-    */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    SUBWORKFLOW: ASSEMBLY
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    This subworkflow performs metagenome assembly using MEGAHIT.
+
+    DEPENDENCIES:
+        - REQUIRES trimmed reads from fastp
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 
 workflow ASSEMBLY {
 
     take:
-    ch_trimmed_reads    // channel: [meta, reads] - trimmed reads from fast
+    ch_trimmed_reads    // channel: [meta, reads] - trimmed reads from fastp
 
     main:
     // Initialize ordered version tracking

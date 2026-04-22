@@ -13,7 +13,11 @@ include { METAPHLAN3_MERGEMETAPHLANTABLES } from '../../modules/nf-core/metaphla
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     This subworkflow performs taxonomic classification and abundance estimation
-    using MetaPhlAn3.
+    using MetaPhlAn.
+
+    DEPENDENCIES:
+        - REQUIRES trimmed reads from fastp
+        - REQUIRES MetaPhlAn database
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */

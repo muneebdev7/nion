@@ -15,8 +15,10 @@ include { HUMANN } from '../../modules/local/humann/main'
     using HUMAnN3.
 
     DEPENDENCIES:
-        - REQUIRES MetaPhlAn3 output (taxonomic profile)
         - REQUIRES trimmed reads from fastp
+        - REQUIRES MetaPhlAn3 output (taxonomic profile)
+        - REQUIRES HUMAnN nucleotide database 
+        - REQUIRES HUMAnN protein database
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
