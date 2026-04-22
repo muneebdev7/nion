@@ -366,6 +366,26 @@
                     "description": "Specify algorithm used for gene finding: Prodigal, Prodigal Metagenomic/Anonymous mode, or none. The 'none' option will not run genefinding."
                 }
             }
+        },
+        "metabat2_options": {
+            "title": "METABAT2 options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "metabat2_min_contig_len": {
+                    "type": "integer",
+                    "default": 1500,
+                    "fa_icon": "fas fa-ruler",
+                    "description": "Minimum length of contigs to include in binning process. Contigs shorter than the specified length will be excluded from the analysis"
+                },
+                "metabat2_seed": {
+                    "type": "integer",
+                    "default": 9999,
+                    "fa_icon": "fas fa-seedling",
+                    "description": "For exact reproducibility of results"
+                }
+            }
         }
     },
     "allOf": [
@@ -395,6 +415,9 @@
         },
         {
             "$ref": "#/$defs/antismash_options"
+        },
+        {
+            "$ref": "#/$defs/metabat2_options"
         }
     ]
 }
