@@ -22,6 +22,7 @@ include { TAXONOMIC_CLASSIFICATION  } from '../subworkflows/local/taxonomic_clas
 include { FUNCTIONAL_ANNOTATION     } from '../subworkflows/local/functional_annotation'
 include { ASSEMBLY                  } from '../subworkflows/local/assembly'
 include { MAPPING                   } from '../subworkflows/local/mapping'
+include { BINNING                   } from '../subworkflows/local/binning'
 include { BGC_IDENTIFICATION        } from '../subworkflows/local/bgc_identification'
 
 /*
@@ -149,6 +150,17 @@ workflow NION {
             ASSEMBLY.out.contigs
         )
         ch_versions = ch_versions.concat(MAPPING.out.versions)
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 5:  Contigs Depth Calculation & Genome Binning
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+    BINNING (
+        ASSEMBLY.out.contigs,
+        MAPPING.out.sorted_bam,
+    )
+    ch_versions = ch_versions.concat(BINNING.out.versions)
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
