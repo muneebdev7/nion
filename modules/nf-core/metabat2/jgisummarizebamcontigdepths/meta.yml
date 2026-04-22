@@ -27,10 +27,15 @@ input:
         description: Sorted BAM file of reads aligned on the assembled contigs
         pattern: "*.bam"
         ontologies: []
-    - bai:
+  - - meta2:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test', single_end:false ]
+    - assembly_contigs_fasta:
         type: file
-        description: BAM index file
-        pattern: "*.bam.bai"
+        description: Final assembled contigs in FASTA format
+        pattern: "*.fa"
         ontologies: []
 output:
   depth:
