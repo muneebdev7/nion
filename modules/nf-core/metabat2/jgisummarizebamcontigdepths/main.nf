@@ -8,11 +8,12 @@ process METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS {
         'biocontainers/metabat2:2.15--h986a166_1' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bam)
+    tuple val(meta2), path (assembly_contigs_fasta)
 
     output:
     tuple val(meta), path("*.txt.gz"), emit: depth
-    path "versions.yml"                    , emit: versions
+    path "versions.yml"              , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,6 +27,7 @@ process METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS {
     jgi_summarize_bam_contig_depths \\
         --outputDepth ${prefix}.txt \\
         $args \\
+        --referenceFasta ${assembly_contigs_fasta} \\
         $bam
 
     bgzip --threads $task.cpus ${prefix}.txt
