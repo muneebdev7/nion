@@ -21,6 +21,7 @@ include { FASTP                     } from '../modules/nf-core/fastp/main'
 include { TAXONOMIC_CLASSIFICATION  } from '../subworkflows/local/taxonomic_classification'
 include { FUNCTIONAL_ANNOTATION     } from '../subworkflows/local/functional_annotation'
 include { ASSEMBLY                  } from '../subworkflows/local/assembly'
+include { MAPPING                   } from '../subworkflows/local/mapping'
 include { BGC_IDENTIFICATION        } from '../subworkflows/local/bgc_identification'
 
 /*
@@ -133,7 +134,6 @@ workflow NION {
         Subworkflow 3: ASSEMBLY - Metagenome assembly using MEGAHIT
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
-
         ASSEMBLY(
             FASTP.out.reads
         )
@@ -141,10 +141,20 @@ workflow NION {
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        Subworkflow 4: BGC IDENTIFICATION - antiSMASH on assembled contigs
+        Subworkflow 4: MAPPING & INDEXING - Read mapping to assembled contigs
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
+        MAPPING(
+            FASTP.out.reads,
+            ASSEMBLY.out.contigs
+        )
+        ch_versions = ch_versions.concat(MAPPING.out.versions)
 
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 5: BGC IDENTIFICATION - antiSMASH on assembled contigs
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
         BGC_IDENTIFICATION(
             ASSEMBLY.out.contigs
         )
