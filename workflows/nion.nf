@@ -23,6 +23,7 @@ include { FUNCTIONAL_ANNOTATION     } from '../subworkflows/local/functional_ann
 include { ASSEMBLY                  } from '../subworkflows/local/assembly'
 include { MAPPING                   } from '../subworkflows/local/mapping'
 include { BINNING                   } from '../subworkflows/local/binning'
+include { BIN_TAXONOMIC_CLASSIFICATION } from '../subworkflows/local/bin_taxonomic_classification'
 include { BGC_IDENTIFICATION        } from '../subworkflows/local/bgc_identification'
 
 /*
@@ -164,7 +165,30 @@ workflow NION {
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        Subworkflow 5: BGC IDENTIFICATION - antiSMASH on assembled contigs
+        Subworkflow 6: BIN TAXONOMIC CLASSIFICATION - gunzip, derep, GTDB-Tk
+        OPTIONAL: Runs only if --gtdbtk_db is provided
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+    
+    if (params.gtdbtk_db) {
+        def ch_gtdbtk_db = channel.fromPath(
+            params.gtdbtk_db,
+            checkIfExists: true
+        ).first()
+
+        BIN_TAXONOMIC_CLASSIFICATION(
+            BINNING.out.bins,
+            ch_gtdbtk_db
+        )
+
+        ch_versions = ch_versions.concat(BIN_TAXONOMIC_CLASSIFICATION.out.versions)
+    } else {
+        log.info('GTDB-Tk classification is disabled: provide --gtdbtk_db to enable post-binning taxonomy.')
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 7: BGC IDENTIFICATION - antiSMASH on assembled contigs
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
         BGC_IDENTIFICATION(
