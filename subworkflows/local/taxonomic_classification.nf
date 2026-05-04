@@ -4,8 +4,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { METAPHLAN3_METAPHLAN3  } from '../../modules/nf-core/metaphlan3/metaphlan3/main'
-include { METAPHLAN3_MERGEMETAPHLANTABLES } from '../../modules/nf-core/metaphlan3/mergemetaphlantables/main'
+include { METAPHLAN4              } from '../../modules/local/metaphlan4/main'
+include { METAPHLAN4_MERGE_TABLES } from '../../modules/local/metaphlan4_merge_tables/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -13,11 +13,11 @@ include { METAPHLAN3_MERGEMETAPHLANTABLES } from '../../modules/nf-core/metaphla
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     This subworkflow performs taxonomic classification and abundance estimation
-    using MetaPhlAn.
+    using MetaPhlAn4.
 
     DEPENDENCIES:
         - REQUIRES trimmed reads from fastp
-        - REQUIRES MetaPhlAn database
+        - REQUIRES MetaPhlAn4.1 database index named as 'mpa_vJun23_CHOCOPhlAnSGB_202307'
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -26,7 +26,7 @@ workflow TAXONOMIC_CLASSIFICATION {
 
     take:
     ch_trimmed_reads    // channel: [meta, reads] - trimmed reads from fastp
-    ch_metaphlan_db     // path: path to MetaPhlAn3 database
+    ch_metaphlan_db     // path: path to MetaPhlAn4.1 database
 
     main:
 
@@ -34,28 +34,28 @@ workflow TAXONOMIC_CLASSIFICATION {
     def ch_versions = channel.empty()
 
     //
-    // MODULE: Run MetaPhlAn3 for taxonomic classification
+    // MODULE: Run MetaPhlAn4 for taxonomic classification
     //
-    METAPHLAN3_METAPHLAN3(
+    METAPHLAN4(
         ch_trimmed_reads.map { meta, reads -> [meta, reads] },
         ch_metaphlan_db
     )
-    ch_versions = ch_versions.concat(METAPHLAN3_METAPHLAN3.out.versions)
+    ch_versions = ch_versions.concat(METAPHLAN4.out.versions)
 
     //
     // MODULE: Merge MetaPhlAn profiles across all samples
     //
-    METAPHLAN3_MERGEMETAPHLANTABLES(
-        METAPHLAN3_METAPHLAN3.out.profile
+    METAPHLAN4_MERGE_TABLES(
+        METAPHLAN4.out.profile
             .collect { _meta, profile -> profile }
             .map { profiles -> [[id:'merged'], profiles] }
     )
-    ch_versions = ch_versions.concat(METAPHLAN3_MERGEMETAPHLANTABLES.out.versions)
+    ch_versions = ch_versions.concat(METAPHLAN4_MERGE_TABLES.out.versions)
 
     emit:
-    profile         = METAPHLAN3_METAPHLAN3.out.profile             // channel: [meta, profile]
-    merged_table    = METAPHLAN3_MERGEMETAPHLANTABLES.out.txt       // channel: [meta, merged_table]
-    versions        = ch_versions                                   // channel: versions
+    profile         = METAPHLAN4.out.profile            // channel: [meta, profile]
+    merged_table    = METAPHLAN4_MERGE_TABLES.out.txt   // channel: [meta, merged_table]
+    versions        = ch_versions                       // channel: versions
 
 }
 
