@@ -1,0 +1,4 @@
+name: metaphlan4
+  - bioconda
+dependencies:
+  - bioconda::metaphlan=4.1.1
