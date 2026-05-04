@@ -386,6 +386,34 @@
                     "description": "For exact reproducibility of results"
                 }
             }
+        },
+        "gtdbtk_options": {
+            "title": "GTDB-Tk options",
+            "type": "object",
+            "description": "Parameters for post-binning taxonomic classification with GTDB-Tk",
+            "default": "",
+            "properties": {
+                "gtdbtk_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Path to a pre-downloaded GTDB-Tk database directory.",
+                    "default": "/media/hdd/muneeb/nion/gtdbtk_release226"
+                },
+                "gtdbtk_extension": {
+                    "type": "string",
+                    "description": "Genome file extension passed to GTDB-Tk classify_wf.",
+                    "default": "fasta"
+                },
+                "gtdbtk_skip_ani_screen": {
+                    "type": "boolean",
+                    "description": "Skip ANI prescreen step in GTDB-Tk classify_wf.",
+                    "default": true
+                },
+                "gtdbtk_use_pplacer_scratch_dir": {
+                    "type": "boolean",
+                    "description": "Use a temporary pplacer scratch directory when running GTDB-Tk."
+                }
+            }
         }
     },
     "allOf": [
@@ -418,6 +446,9 @@
         },
         {
             "$ref": "#/$defs/metabat2_options"
+        },
+        {
+            "$ref": "#/$defs/gtdbtk_options"
         }
     ]
 }
