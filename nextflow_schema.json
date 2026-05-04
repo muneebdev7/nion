@@ -282,21 +282,31 @@
             },
             "fa_icon": "fas fa-broom"
         },
-        "metaphlan_options": {
-            "title": "MetaPhlAn3 options",
+        "metaphlan4_options": {
+            "title": "MetaPhlAn4 options",
             "type": "object",
-            "description": "Parameters for taxonomic profiling with MetaPhlAn3",
+            "description": "Parameters for taxonomic profiling with MetaPhlAn4",
             "properties": {
                 "metaphlan_db": {
                     "type": "string",
                     "format": "directory-path",
-                    "description": "Path to a pre-downloaded MetaPhlAn database directory.",
-                    "default": "/media/hdd/muneeb/nion/metaphlan_db"
+                    "description": "Path to a pre-downloaded MetaPhlAn4 database directory.",
+                    "default": "/media/hdd/muneeb/nion/metaphlan4.1_db"
                 },
                 "metaphlan_index": {
                     "type": "string",
-                    "default": "mpa_v31_CHOCOPhlAn_201901",
-                    "description": "MetaPhlAn database index name passed to --index."
+                    "default": "mpa_vJun23_CHOCOPhlAnSGB_202307",
+                    "description": "MetaPhlAn database index name passed to --index"
+                },
+                "metaphlan_analysis_type": {
+                    "type": "string",
+                    "default": "rel_ab_w_read_stats",
+                    "description": "Type of analysis to perform"
+                },
+                "metaphlan_stat_q": {
+                    "type": "number",
+                    "default": 0.2,
+                    "description": "Quantile value for the robust average"
                 }
             },
             "fa_icon": "fas fa-microscope"
@@ -433,7 +443,7 @@
             "$ref": "#/$defs/fastp_options"
         },
         {
-            "$ref": "#/$defs/metaphlan_options"
+            "$ref": "#/$defs/metaphlan4_options"
         },
         {
             "$ref": "#/$defs/humann_options"
