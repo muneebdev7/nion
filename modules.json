@@ -37,6 +37,16 @@
                         "git_sha": "41dfa3f7c0ffabb96a6a813fe321c6d1cc5b6e46",
                         "installed_by": ["modules"]
                     },
+                    "gtdbtk/classifywf": {
+                        "branch": "master",
+                        "git_sha": "ade859ec322e8ca528f55fc704e275550308e6cf",
+                        "installed_by": ["modules"]
+                    },
+                    "gunzip": {
+                        "branch": "master",
+                        "git_sha": "96c57dfd98a0641886a67bd449fe33ee2ec0e374",
+                        "installed_by": ["modules"]
+                    },
                     "megahit": {
                         "branch": "master",
                         "git_sha": "4dd9d8439a429c7ee566e0e2347f76ddeef27e66",
@@ -71,6 +81,11 @@
                     "samtools/index": {
                         "branch": "master",
                         "git_sha": "156feda0cb6589cd29c04902004fa3b53bc00205",
+                        "installed_by": ["modules"]
+                    },
+                    "seqfu/derep": {
+                        "branch": "master",
+                        "git_sha": "6b81c03dc4465ac9351b293dc6caada2a5e7556c",
                         "installed_by": ["modules"]
                     }
                 }
