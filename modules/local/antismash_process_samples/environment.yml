@@ -1,0 +1,6 @@
+name: antismash_process_samples
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - biopython
