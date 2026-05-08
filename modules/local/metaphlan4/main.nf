@@ -39,6 +39,7 @@ process METAPHLAN4 {
         $input_data \\
         $args \\
         $bowtie2_out \\
+        --offline \\
         --bowtie2db \$BT2_DB \\
         --biom ${prefix}.biom \\
         --output_file ${prefix}_profile.txt
