@@ -16,7 +16,7 @@ include { HUMANN } from '../../modules/local/humann/main'
 
     DEPENDENCIES:
         - REQUIRES trimmed reads from fastp
-        - REQUIRES MetaPhlAn3 output (taxonomic profile)
+        - REQUIRES MetaPhlAn4.1 output (taxonomic profile)
         - REQUIRES HUMAnN nucleotide database 
         - REQUIRES HUMAnN protein database
 
@@ -52,11 +52,10 @@ workflow FUNCTIONAL_ANNOTATION {
     ch_versions = ch_versions.concat(HUMANN.out.versions)
 
     emit:
-    pathabundance   = HUMANN.out.pathabundance      // channel: [meta, pathabundance]
-    pathcoverage    = HUMANN.out.pathcoverage       // channel: [meta, pathcoverage]
-    genefamilies    = HUMANN.out.genefamilies       // channel: [meta, genefamilies] (if available)
-    versions        = ch_versions                   // channel: versions
-
+    pathabundance   = HUMANN.out.pathabundance    // channel: [meta, pathabundance]
+    pathcoverage    = HUMANN.out.pathcoverage     // channel: [meta, pathcoverage]
+    genefamilies    = HUMANN.out.genefamilies     // channel: [meta, genefamilies] (if available)
+    versions        = ch_versions                 // channel: versions
 }
 
 /*
