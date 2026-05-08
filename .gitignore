@@ -7,4 +7,13 @@ testing/
 testing*
 *.pyc
 null/
+.claude/
+metaphlan_setup.md
+metaphlan3.0_db/
+metaphlan4.2_db/
+metaphlan4.1_db/
+uniref90_db/
+chocophlan_db/
+antismash_db/
+gtdbtk_release226/
 .lineage/

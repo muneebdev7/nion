@@ -53,7 +53,8 @@
                     "type": "string",
                     "description": "Name of iGenomes reference.",
                     "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details.",
+                    "hidden": true
                 },
                 "fasta": {
                     "type": "string",
@@ -63,7 +64,8 @@
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "description": "Path to FASTA genome file.",
                     "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
+                    "fa_icon": "far fa-file-code",
+                    "hidden": true
                 },
                 "igenomes_ignore": {
                     "type": "boolean",
@@ -230,6 +232,190 @@
                     "description": "Display hidden parameters in the help message (only works when --help or --help_full are provided)."
                 }
             }
+        },
+        "fastp_options": {
+            "title": "fastp options",
+            "type": "object",
+            "description": "Extended arguments for preprocessing",
+            "default": "",
+            "properties": {
+                "adapter_fasta": {
+                    "type": "string",
+                    "fa_icon": "fas fa-ruler",
+                    "description": "Specify a FASTA file to trim adapter sequences in the read files."
+                },
+                "discard_trimmed_pass": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-trash-alt",
+                    "description": "read1/read2 output file name"
+                },
+                "save_trimmed_fail": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-save",
+                    "description": "Specify the file to store reads that cannot pass the filters"
+                },
+                "save_merged": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-save",
+                    "description": "In the merging mode, specify the file name to store merged output"
+                },
+                "fastp_phred_quality": {
+                    "type": "integer",
+                    "description": "The PHRED quality value that a base is qualified. Default 20 means PHRED quality >=Q20 is qualified",
+                    "default": 20,
+                    "fa_icon": "fas fa-greater-than-equal"
+                },
+                "fastp_reads_minlen_required": {
+                    "type": "integer",
+                    "description": "Reads shorter than length required (specified value) will be discarded",
+                    "default": 50,
+                    "fa_icon": "fas fa-ruler"
+                }
+            },
+            "fa_icon": "fas fa-broom"
+        },
+        "metaphlan4_options": {
+            "title": "MetaPhlAn4 options",
+            "type": "object",
+            "description": "Parameters for taxonomic profiling with MetaPhlAn4",
+            "properties": {
+                "metaphlan_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Path to a pre-downloaded MetaPhlAn4 database directory.",
+                    "default": "/media/hdd/muneeb/nion/metaphlan4.1_db"
+                },
+                "metaphlan_index": {
+                    "type": "string",
+                    "default": "mpa_vJun23_CHOCOPhlAnSGB_202307",
+                    "description": "MetaPhlAn database index name passed to --index"
+                },
+                "metaphlan_analysis_type": {
+                    "type": "string",
+                    "default": "rel_ab_w_read_stats",
+                    "description": "Type of analysis to perform"
+                },
+                "metaphlan_stat_q": {
+                    "type": "number",
+                    "default": 0.2,
+                    "description": "Quantile value for the robust average"
+                }
+            },
+            "fa_icon": "fas fa-microscope"
+        },
+        "humann_options": {
+            "title": "HUMAnN options",
+            "type": "object",
+            "description": "Parameters for functional annotation with HUMAnN",
+            "default": "",
+            "properties": {
+                "humann_nucleotide_db": {
+                    "type": "string",
+                    "default": "/media/hdd/muneeb/nion/chocophlan_db",
+                    "description": "Path to a pre-downloaded ChocoPhlAn database directory."
+                },
+                "humann_protein_db": {
+                    "type": "string",
+                    "default": "/media/hdd/muneeb/nion/uniref90_db",
+                    "description": "Path to a pre-downloaded UniRef90 database directory."
+                }
+            }
+        },
+        "megahit_options": {
+            "title": "MEGAHIT options",
+            "type": "object",
+            "description": "MEGAHIT options for optimized and efficient assembly process",
+            "default": "",
+            "properties": {
+                "megahit_kmer_list": {
+                    "type": "string",
+                    "default": "31,59,87,115,143",
+                    "fa_icon": "fas fa-clipboard-list",
+                    "description": "Optimized list of k-mers. All must be odd, in the range 15-255"
+                },
+                "megahit_min_contig_len": {
+                    "type": "integer",
+                    "default": 1500,
+                    "fa_icon": "fas fa-ruler",
+                    "description": "Minimum length of contigs to output"
+                }
+            },
+            "fa_icon": "fas fa-align-justify"
+        },
+        "antismash_options": {
+            "title": "antiSMASH options",
+            "type": "object",
+            "description": "Parameters for BGCs identification with antiSMASH",
+            "default": "",
+            "properties": {
+                "gff": {
+                    "type": "string",
+                    "description": "Specify GFF3 file to extract features from."
+                },
+                "antismash_databases": {
+                    "type": "string",
+                    "default": "/media/hdd/muneeb/nion/antismash_db",
+                    "description": "Root directory of the antiSMASH databases"
+                },
+                "antismash_taxon": {
+                    "type": "string",
+                    "default": "bacteria",
+                    "description": "Taxonomic classification of input sequence. {bacteria,fungi}"
+                },
+                "antismash_genefinding_tool": {
+                    "type": "string",
+                    "default": "prodigal",
+                    "description": "Specify algorithm used for gene finding: Prodigal, Prodigal Metagenomic/Anonymous mode, or none. The 'none' option will not run genefinding."
+                }
+            }
+        },
+        "metabat2_options": {
+            "title": "METABAT2 options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "metabat2_min_contig_len": {
+                    "type": "integer",
+                    "default": 1500,
+                    "fa_icon": "fas fa-ruler",
+                    "description": "Minimum length of contigs to include in binning process. Contigs shorter than the specified length will be excluded from the analysis"
+                },
+                "metabat2_seed": {
+                    "type": "integer",
+                    "default": 9999,
+                    "fa_icon": "fas fa-seedling",
+                    "description": "For exact reproducibility of results"
+                }
+            }
+        },
+        "gtdbtk_options": {
+            "title": "GTDB-Tk options",
+            "type": "object",
+            "description": "Parameters for post-binning taxonomic classification with GTDB-Tk",
+            "default": "",
+            "properties": {
+                "gtdbtk_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Path to a pre-downloaded GTDB-Tk database directory.",
+                    "default": "/media/hdd/muneeb/nion/gtdbtk_release226"
+                },
+                "gtdbtk_extension": {
+                    "type": "string",
+                    "description": "Genome file extension passed to GTDB-Tk classify_wf.",
+                    "default": "fasta"
+                },
+                "gtdbtk_skip_ani_screen": {
+                    "type": "boolean",
+                    "description": "Skip ANI prescreen step in GTDB-Tk classify_wf.",
+                    "default": true
+                },
+                "gtdbtk_use_pplacer_scratch_dir": {
+                    "type": "boolean",
+                    "description": "Use a temporary pplacer scratch directory when running GTDB-Tk."
+                }
+            }
         }
     },
     "allOf": [
@@ -244,6 +430,27 @@
         },
         {
             "$ref": "#/$defs/generic_options"
+        },
+        {
+            "$ref": "#/$defs/fastp_options"
+        },
+        {
+            "$ref": "#/$defs/metaphlan4_options"
+        },
+        {
+            "$ref": "#/$defs/humann_options"
+        },
+        {
+            "$ref": "#/$defs/megahit_options"
+        },
+        {
+            "$ref": "#/$defs/antismash_options"
+        },
+        {
+            "$ref": "#/$defs/metabat2_options"
+        },
+        {
+            "$ref": "#/$defs/gtdbtk_options"
         }
     ]
 }

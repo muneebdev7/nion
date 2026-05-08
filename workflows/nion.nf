@@ -3,12 +3,28 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
-include { MULTIQC                } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap       } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nion_pipeline'
+include { MULTIQC                   } from '../modules/nf-core/multiqc/main'
+include { paramsSummaryMap          } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML    } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_nion_pipeline'
+
+//
+// MODULE: Installed directly from nf-core/modules
+//
+include { FASTQC                    } from '../modules/nf-core/fastqc/main'
+include { FASTP                     } from '../modules/nf-core/fastp/main'
+
+//
+// SUBWORKFLOWS
+//
+include { TAXONOMIC_CLASSIFICATION  } from '../subworkflows/local/taxonomic_classification'
+include { FUNCTIONAL_ANNOTATION     } from '../subworkflows/local/functional_annotation'
+include { ASSEMBLY                  } from '../subworkflows/local/assembly'
+include { MAPPING                   } from '../subworkflows/local/mapping'
+include { BINNING                   } from '../subworkflows/local/binning'
+include { BIN_TAXONOMIC_CLASSIFICATION } from '../subworkflows/local/bin_taxonomic_classification'
+include { BGC_IDENTIFICATION        } from '../subworkflows/local/bgc_identification'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,7 +35,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nion
 workflow NION {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    ch_raw_short_reads // channel: samplesheet read in from --input
     multiqc_config
     multiqc_logo
     multiqc_methods_description
@@ -29,11 +45,161 @@ workflow NION {
 
     def ch_versions = channel.empty()
     def ch_multiqc_files = channel.empty()
+
     //
     // MODULE: Run FastQC
     //
-    FASTQC(ch_samplesheet)
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map{ _meta, file -> file })
+    FASTQC (
+        ch_raw_short_reads
+    )
+    ch_versions = ch_versions.concat(FASTQC.out.versions)
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map { _meta, file -> file })
+
+    //
+    // MODULE: Run Fastp for trimming and filtering
+    //
+    FASTP (
+        ch_raw_short_reads.map { meta, reads -> [meta, reads, []] },
+        false,
+        params.save_trimmed_fail,
+        false
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.json.map { _meta, json -> json })
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 1: TAXONOMIC CLASSIFICATION - Taxonomic profiling using MetaPhlAn3
+        OPTIONAL: Only runs if --metaphlan_db is provided
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+    if (params.metaphlan_db) {
+        def ch_metaphlan_db = channel.fromPath(
+            params.metaphlan_db,
+            checkIfExists: true
+        ).first()
+
+        TAXONOMIC_CLASSIFICATION(
+            FASTP.out.reads,
+            ch_metaphlan_db
+        )
+
+        ch_versions = ch_versions.concat(TAXONOMIC_CLASSIFICATION.out.versions)
+        ch_multiqc_files = ch_multiqc_files.mix(TAXONOMIC_CLASSIFICATION.out.profile.map { _meta, profile -> profile })
+    } else {
+        log.warn("MetaPhlAn is disabled: provide --metaphlan_db.")
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 2: FUNCTIONAL ANNOTATION - Functional profiling using HUMAnN
+        OPTIONAL: Only runs if both --humann_nucleotide_db and --humann_protein_db provided
+        REQUIRED: --metaphlan_db must be enabled (MetaPhlAn output is needed as input)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+    if (params.humann_nucleotide_db && params.humann_protein_db) {
+
+        // Validate that MetaPhlAn is enabled (required for HUMAnN)
+        if (!params.metaphlan_db) {
+            log.error(
+                "ERROR: --metaphlan_db is required when running HUMAnN.\n" +
+                "       HUMAnN requires MetaPhlAn taxonomic output as input.\n" +
+                "       Please provide --metaphlan_db or disable HUMAnN (omit --humann_nucleotide_db and --humann_protein_db)."
+            )
+            System.exit(1)
+        }
+
+        def ch_humann_nucleotide_db = channel.fromPath(
+            params.humann_nucleotide_db,
+            checkIfExists: true
+        ).first()
+        def ch_humann_protein_db = channel.fromPath(
+            params.humann_protein_db,
+            checkIfExists: true
+        ).first()
+
+        FUNCTIONAL_ANNOTATION(
+            FASTP.out.reads,
+            TAXONOMIC_CLASSIFICATION.out.profile,
+            ch_humann_nucleotide_db,
+            ch_humann_protein_db
+        )
+
+        ch_versions = ch_versions.concat(FUNCTIONAL_ANNOTATION.out.versions)
+    } else {
+        if (!params.humann_nucleotide_db || !params.humann_protein_db) {
+            log.info(
+                "HUMAnN is disabled. To enable, provide both:\n" +
+                "  --humann_nucleotide_db <path>\n" +
+                "  --humann_protein_db <path>\n" +
+                "  (and ensure --metaphlan_db is also provided)"
+            )
+        }
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 3: ASSEMBLY - Metagenome assembly using MEGAHIT
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+        ASSEMBLY(
+            FASTP.out.reads
+        )
+        ch_versions = ch_versions.concat(ASSEMBLY.out.versions)
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 4: MAPPING & INDEXING - Read mapping to assembled contigs
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+        MAPPING(
+            FASTP.out.reads,
+            ASSEMBLY.out.contigs
+        )
+        ch_versions = ch_versions.concat(MAPPING.out.versions)
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 5:  Contigs Depth Calculation & Genome Binning
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+    BINNING (
+        ASSEMBLY.out.contigs,
+        MAPPING.out.sorted_bam,
+    )
+    ch_versions = ch_versions.concat(BINNING.out.versions)
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 6: BIN TAXONOMIC CLASSIFICATION - gunzip, derep, GTDB-Tk
+        OPTIONAL: Runs only if --gtdbtk_db is provided
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+    
+    if (params.gtdbtk_db) {
+        def ch_gtdbtk_db = channel.fromPath(
+            params.gtdbtk_db,
+            checkIfExists: true
+        ).first()
+
+        BIN_TAXONOMIC_CLASSIFICATION(
+            BINNING.out.bins,
+            ch_gtdbtk_db
+        )
+
+        ch_versions = ch_versions.concat(BIN_TAXONOMIC_CLASSIFICATION.out.versions)
+    } else {
+        log.info('GTDB-Tk classification is disabled: provide --gtdbtk_db to enable post-binning taxonomy.')
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Subworkflow 7: BGC IDENTIFICATION - antiSMASH on assembled contigs
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+        BGC_IDENTIFICATION(
+            ASSEMBLY.out.contigs
+        )
+        ch_versions = ch_versions.concat(BGC_IDENTIFICATION.out.versions)
 
     //
     // Collate and save software versions
