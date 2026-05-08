@@ -37,6 +37,7 @@ process HUMANN {
         --protein-database ${protein_db} \\
         --taxonomic-profile ${taxonomic_profile} \\
         --threads ${task.cpus} \\
+        --remove-temp-output \\
         ${args}
 
     # Rename outputs to use the sample prefix
