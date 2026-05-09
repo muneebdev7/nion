@@ -319,7 +319,8 @@
                     "default": "/media/hdd/muneeb/nion/uniref90_db",
                     "description": "Path to a pre-downloaded UniRef90 database directory."
                 }
-            }
+            },
+            "fa_icon": "fas fa-asterisk"
         },
         "megahit_options": {
             "title": "MEGAHIT options",
@@ -367,7 +368,8 @@
                     "default": "prodigal",
                     "description": "Specify algorithm used for gene finding: Prodigal, Prodigal Metagenomic/Anonymous mode, or none. The 'none' option will not run genefinding."
                 }
-            }
+            },
+            "fa_icon": "fas fa-dna"
         },
         "metabat2_options": {
             "title": "METABAT2 options",
@@ -387,7 +389,8 @@
                     "fa_icon": "fas fa-seedling",
                     "description": "For exact reproducibility of results"
                 }
-            }
+            },
+            "fa_icon": "fas fa-shopping-basket"
         },
         "gtdbtk_options": {
             "title": "GTDB-Tk options",
@@ -415,7 +418,8 @@
                     "type": "boolean",
                     "description": "Use a temporary pplacer scratch directory when running GTDB-Tk."
                 }
-            }
+            },
+            "fa_icon": "fas fa-bacteria"
         }
     },
     "allOf": [
